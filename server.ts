@@ -54,7 +54,11 @@ async function fetchNewToken() {
     // Search for popular keywords to find active tokens
     const queries = ['solana', 'pump', 'meme', 'cat', 'dog', 'ai'];
     const randomQuery = queries[Math.floor(Math.random() * queries.length)];
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${randomQuery}`);
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${randomQuery}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
     const data = await res.json();
     
     let solanaPairs = data.pairs?.filter((p: any) => 
@@ -104,7 +108,11 @@ async function resolveTokens() {
     if (token.status === 'active' && now > token.resolvesAt) {
       token.status = 'resolving';
       try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/pairs/solana/${pairAddress}`);
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/pairs/solana/${pairAddress}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
         const data = await res.json();
         const currentPair = data.pairs?.[0];
         
