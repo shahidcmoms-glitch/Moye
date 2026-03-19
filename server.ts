@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
+import fs from 'fs';
 
 // --- In-Memory Database Setup ---
 type User = {
@@ -244,9 +245,14 @@ async function startServer() {
   });
 
   app.get('/api/live-tokens', (req, res) => {
-    const tokens = Array.from(db.activeTokens.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    res.json({ success: true, tokens });
+    try {
+      const tokens = Array.from(db.activeTokens.values())
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      res.json({ success: true, tokens });
+    } catch (error) {
+      console.error('Error in /api/live-tokens:', error);
+      res.status(500).json({ error: 'Server error' });
+    }
   });
 
   app.post('/api/predict', async (req, res) => {
@@ -316,7 +322,9 @@ async function startServer() {
   });
 
   // --- Vite Middleware ---
-  if (process.env.NODE_ENV !== 'production') {
+  const isProd = process.env.NODE_ENV === 'production' || fs.existsSync(path.join(process.cwd(), 'dist', 'index.html'));
+  
+  if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
